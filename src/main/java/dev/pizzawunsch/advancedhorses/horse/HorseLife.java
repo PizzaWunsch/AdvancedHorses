@@ -4,6 +4,7 @@ import dev.pizzawunsch.advancedhorses.access.AdvancedHorseAccess;
 import dev.pizzawunsch.advancedhorses.anim.HorseAnimation;
 import dev.pizzawunsch.advancedhorses.block.TroughBlock;
 import dev.pizzawunsch.advancedhorses.book.HorseRegistry;
+import dev.pizzawunsch.advancedhorses.registry.ModEffects;
 import dev.pizzawunsch.advancedhorses.registry.ModRules;
 import dev.pizzawunsch.advancedhorses.taming.TamingManager;
 import java.util.UUID;
@@ -16,7 +17,13 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.Container;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.item.ItemUtils;
+import net.minecraft.world.item.alchemy.PotionContents;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.util.LandRandomPos;
 import net.minecraft.world.entity.animal.equine.AbstractHorse;
@@ -29,14 +36,14 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 
 public final class HorseLife {
-    private static final HorseStat[] TRAINED = {HorseStat.TRAINED_SPEED, HorseStat.TRAINED_STAMINA, HorseStat.TRAINED_STRENGTH};
-    private static final String[] TRAINED_KEYS = {"advancedhorses.stat.speed", "advancedhorses.stat.stamina", "advancedhorses.stat.strength"};
-
     private static final float IDLE_HUNGER_PER_TICK = HorseStats.MAX_HUNGER / 48000.0F;
     private static final float WANDER_HUNGER_PER_BLOCK = 0.004F;
     private static final float GRAZE_PER_TICK = 0.1F;
     private static final int LAME_TICKS = 6000;
     private static final float WINDED_RECOVERY = 30.0F;
+    private static final float MIN_JUMP_HEIGHT = 0.6F;
+    private static final float MAX_JUMP_HEIGHT = 6.0F;
+    private static final float XP_PER_JUMP_BLOCK = 4.0F;
 
     private HorseLife() {
     }
@@ -75,15 +82,21 @@ public final class HorseLife {
             tickHunger(horse, level, state, distance, rider);
         }
         tickEnergy(horse, level, state, distance, rider);
+        HorseLevel.applyAttributes(horse);
         if (rider != null) {
+            tickJump(horse, level, state, rider);
             if (distance > 0.0) {
-                tickTraining(horse, level, state, distance, rider);
-                tickShoes(horse, state, distance, rider);
+                addXp(horse, level, state, (float) distance * HorseGait.current(horse).xpPerBlock(), rider);
+                tickShoes(horse, level, state, distance, rider);
                 setBond(horse, state, state.bond + (float) distance / 8000.0F);
             }
             tickTerrain(horse, level, state, distance, rider);
-        } else if (HorseStats.get(horse, HorseByte.TERRAIN) != 100) {
-            HorseStats.set(horse, HorseByte.TERRAIN, 100);
+        } else {
+            state.airborne = false;
+            state.jumpStartY = horse.getY();
+            if (HorseStats.get(horse, HorseByte.TERRAIN) != 100) {
+                HorseStats.set(horse, HorseByte.TERRAIN, 100);
+            }
         }
         tickLameness(horse, level, access, state);
         tickRest(horse, level, access, state);
@@ -102,19 +115,14 @@ public final class HorseLife {
             case HUNGER -> state.hunger;
             case ENERGY -> state.energy;
             case BOND -> state.bond;
-            case TRAINED_SPEED -> state.training[0];
-            case TRAINED_STAMINA -> state.training[1];
-            case TRAINED_STRENGTH -> state.training[2];
+            case XP -> state.xp;
             default -> HorseStats.get(horse, stat);
         };
     }
 
-    public static void loadTraining(AbstractHorse horse) {
+    public static void loadState(AbstractHorse horse) {
         LifeState state = state(horse);
-        for (int i = 0; i < TRAINED.length; i++) {
-            state.training[i] = Math.max(0.0F, HorseStats.get(horse, TRAINED[i]));
-            state.trainingNotified[i] = Mth.floor(state.training[i] * 10.0F);
-        }
+        state.xp = Math.max(0.0F, HorseStats.get(horse, HorseStat.XP));
         state.hunger = HorseStats.get(horse, HorseStat.HUNGER);
         state.energy = HorseStats.get(horse, HorseStat.ENERGY);
         state.bond = HorseStats.get(horse, HorseStat.BOND);
@@ -216,6 +224,8 @@ public final class HorseLife {
             return;
         }
 
+        boolean potion = horse.hasEffect(ModEffects.HORSE_STAMINA);
+        HorseStats.setFlag(horse, HorseByte.FLAG_STAMINA_POTION, potion);
         HorseGait gait = rider != null ? HorseGait.current(horse) : HorseGait.WALK;
         boolean moving = distance > 0.05;
         float change;
@@ -225,7 +235,7 @@ public final class HorseLife {
                 case GALLOP -> 0.08F;
                 default -> 0.35F;
             };
-            change = -drain * (1.4F - 0.8F * HorseStats.stamina(horse)) * HorseStats.trait(horse).energy();
+            change = potion ? 0.0F : -drain * (1.4F - 0.8F * HorseStats.stamina(horse)) * HorseStats.trait(horse).energy();
         } else {
             float regen = moving && gait == HorseGait.TROT ? 0.12F : 0.35F;
             change = regen * (1.0F + 0.3F * HorseStats.bond(horse));
@@ -254,30 +264,57 @@ public final class HorseLife {
         }
     }
 
-    private static void tickTraining(AbstractHorse horse, ServerLevel level, LifeState state, double distance, ServerPlayer rider) {
-        HorseGait gait = HorseGait.current(horse);
-        float rate = ModRules.factor(level, ModRules.TRAINING_RATE) * HorseStats.trait(horse).training()
-            * (1.0F + 0.5F * HorseStats.bond(horse)) * HorseStats.ageTrainingFactor(horse);
-        float d = (float) distance * rate;
-        float speedGain = gait.ordinal() >= HorseGait.GALLOP.ordinal() ? d / 15000.0F * (gait == HorseGait.RACE ? 1.5F : 1.0F) : 0.0F;
-        float staminaGain = gait.ordinal() >= HorseGait.TROT.ordinal() ? d / 12000.0F * (gait.ordinal() - 1) * 0.5F : 0.0F;
-        float strengthGain = d / 20000.0F * (1.0F + carriedStacks(horse) / 6.0F);
-
-        float[] gains = {speedGain, staminaGain, strengthGain};
-        for (int i = 0; i < gains.length; i++) {
-            if (gains[i] <= 0.0F || state.training[i] >= 1.0F) {
-                continue;
+    private static void tickJump(AbstractHorse horse, ServerLevel level, LifeState state, ServerPlayer rider) {
+        if (horse.onGround() || horse.isInWater()) {
+            if (state.airborne) {
+                state.airborne = false;
+                float height = (float) Math.min(MAX_JUMP_HEIGHT, state.jumpPeakY - state.jumpStartY);
+                if (height >= MIN_JUMP_HEIGHT) {
+                    addXp(horse, level, state, height * XP_PER_JUMP_BLOCK, rider);
+                }
             }
-            state.training[i] = Math.min(1.0F, state.training[i] + gains[i]);
-            sync(horse, TRAINED[i], state.training[i], 0.002F, 1.0F);
-
-            int step = Mth.floor(state.training[i] * 10.0F);
-            if (step > state.trainingNotified[i]) {
-                state.trainingNotified[i] = step;
-                rider.sendOverlayMessage(Component.translatable("advancedhorses.trained",
-                    Component.translatable(TRAINED_KEYS[i]), step * 10).withStyle(ChatFormatting.AQUA));
-            }
+            state.jumpStartY = horse.getY();
+            return;
         }
+        if (!state.airborne) {
+            state.airborne = true;
+            state.jumpPeakY = horse.getY();
+        }
+        state.jumpPeakY = Math.max(state.jumpPeakY, horse.getY());
+    }
+
+    private static void addXp(AbstractHorse horse, ServerLevel level, LifeState state, float amount, ServerPlayer rider) {
+        int current = HorseLevel.level(horse);
+        if (amount <= 0.0F || !horse.isTamed() || current >= HorseLevel.MAX_LEVEL) {
+            return;
+        }
+        float rate = ModRules.factor(level, ModRules.XP_RATE) * HorseStats.trait(horse).xp()
+            * (1.0F + 0.5F * HorseStats.bond(horse)) * HorseStats.ageXpFactor(horse)
+            * (1.0F + carriedStacks(horse) / 12.0F);
+        state.xp += amount * rate;
+
+        while (current < HorseLevel.MAX_LEVEL && state.xp >= HorseLevel.xpForNext(current)) {
+            state.xp -= HorseLevel.xpForNext(current);
+            current++;
+            HorseStats.set(horse, HorseByte.LEVEL, current);
+            onLevelUp(horse, current, rider);
+        }
+        if (current >= HorseLevel.MAX_LEVEL) {
+            state.xp = 0.0F;
+        }
+        sync(horse, HorseStat.XP, state.xp, 1.0F, HorseLevel.xpForNext(current));
+    }
+
+    private static void onLevelUp(AbstractHorse horse, int level, ServerPlayer rider) {
+        HorseUpgrade upgrade = HorseUpgrade.forLevel(level);
+        HorseLevel.applyAttributes(horse);
+        if (upgrade == HorseUpgrade.HEALTH) {
+            horse.heal(upgrade.perStep());
+        }
+        horse.playSound(SoundEvents.PLAYER_LEVELUP, 0.6F, 1.2F);
+        TamingManager.playAnimation(horse, HorseAnimation.HEAD_TOSS);
+        rider.sendOverlayMessage(Component.translatable("advancedhorses.level_up", horse.getName(), level,
+            Component.translatable(upgrade.translationKey())).withStyle(ChatFormatting.AQUA));
     }
 
     private static int carriedStacks(AbstractHorse horse) {
@@ -291,7 +328,7 @@ public final class HorseLife {
         return Math.min(count, HorseStats.MAX_SLOTS);
     }
 
-    private static void tickShoes(AbstractHorse horse, LifeState state, double distance, ServerPlayer rider) {
+    private static void tickShoes(AbstractHorse horse, ServerLevel level, LifeState state, double distance, ServerPlayer rider) {
         Container container = TamingManager.access(horse).advancedhorses$getShoeContainer();
         ItemStack shoes = container.getItem(0);
         if (shoes.isEmpty() || !shoes.isDamageableItem()) {
@@ -303,7 +340,7 @@ public final class HorseLife {
             return;
         }
         state.shoeWear -= wear;
-        int damage = shoes.getDamageValue() + wear;
+        int damage = shoes.getDamageValue() + EnchantmentHelper.processDurabilityChange(level, shoes, wear);
         if (damage >= shoes.getMaxDamage()) {
             container.setItem(0, ItemStack.EMPTY);
             rider.sendOverlayMessage(Component.translatable("advancedhorses.shoes.worn").withStyle(ChatFormatting.YELLOW));
@@ -311,6 +348,42 @@ public final class HorseLife {
         } else {
             shoes.setDamageValue(damage);
         }
+    }
+
+    public static int repairShoesWithXp(ServerPlayer player, int amount) {
+        if (amount <= 0 || !(player.getVehicle() instanceof AbstractHorse horse) || !TamingManager.isTameableType(horse)) {
+            return amount;
+        }
+        ItemStack shoes = TamingManager.access(horse).advancedhorses$getShoeContainer().getItem(0);
+        if (shoes.isEmpty() || !shoes.isDamaged()) {
+            return amount;
+        }
+        int durability = EnchantmentHelper.modifyDurabilityToRepairFromXp(player.level(), shoes, amount);
+        if (durability <= 0) {
+            return amount;
+        }
+        int repaired = Math.min(durability, shoes.getDamageValue());
+        shoes.setDamageValue(shoes.getDamageValue() - repaired);
+        return amount - repaired * amount / durability;
+    }
+
+    public static boolean giveStaminaPotion(AbstractHorse horse, Player player, InteractionHand hand) {
+        ItemStack stack = player.getItemInHand(hand);
+        PotionContents contents = stack.get(DataComponents.POTION_CONTENTS);
+        if (!stack.is(Items.POTION) || contents == null) {
+            return false;
+        }
+        int duration = contents.is(ModEffects.LONG_STAMINA_POTION) ? ModEffects.LONG_DURATION
+            : contents.is(ModEffects.STAMINA_POTION) ? ModEffects.DURATION : 0;
+        if (duration == 0) {
+            return false;
+        }
+        if (!player.level().isClientSide()) {
+            horse.addEffect(new MobEffectInstance(ModEffects.HORSE_STAMINA, duration), player);
+            horse.playSound(SoundEvents.GENERIC_DRINK.value(), 1.0F, 1.0F);
+            player.setItemInHand(hand, ItemUtils.createFilledResult(stack, player, new ItemStack(Items.GLASS_BOTTLE)));
+        }
+        return true;
     }
 
     private static void tickTerrain(AbstractHorse horse, ServerLevel level, LifeState state, double distance, ServerPlayer rider) {

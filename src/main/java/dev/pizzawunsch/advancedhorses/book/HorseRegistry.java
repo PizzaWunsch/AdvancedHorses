@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 import dev.pizzawunsch.advancedhorses.horse.HorseByte;
+import dev.pizzawunsch.advancedhorses.horse.HorseLevel;
 import dev.pizzawunsch.advancedhorses.horse.HorseLife;
 import dev.pizzawunsch.advancedhorses.horse.HorseStat;
 import dev.pizzawunsch.advancedhorses.horse.HorseStats;
@@ -48,7 +49,7 @@ public final class HorseRegistry {
         HorseEntry entry = new HorseEntry(horse.getUUID(), horse.getName().getString(), HorseStats.breed(horse).id(),
             (float) HorseStats.blocksPerSecond(HorseStats.speed(horse)), Math.round(HorseStats.stamina(horse) * 100.0F),
             Math.round(HorseStats.strength(horse) * 100.0F), Math.round(HorseStats.bond(horse) * 100.0F),
-            Math.round(HorseStats.get(horse, HorseStat.HUNGER)), HorseStats.get(horse, HorseByte.AGE),
+            Math.round(HorseStats.get(horse, HorseStat.HUNGER)), HorseStats.get(horse, HorseByte.AGE), HorseLevel.level(horse),
             horse.level().dimension().identifier().toString(), horse.getBlockX(), horse.getBlockY(), horse.getBlockZ(),
             horse.level().getGameTime());
         ENTRIES.computeIfAbsent(owner, key -> new LinkedHashMap<>()).put(horse.getUUID(), entry);

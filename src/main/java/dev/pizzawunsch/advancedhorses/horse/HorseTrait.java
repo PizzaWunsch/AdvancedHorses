@@ -15,16 +15,16 @@ public enum HorseTrait {
 
     private final int id;
     private final float taming;
-    private final float training;
+    private final float xp;
     private final float hunger;
     private final float food;
     private final float energy;
     private final float injury;
 
-    HorseTrait(int id, float taming, float training, float hunger, float food, float energy, float injury) {
+    HorseTrait(int id, float taming, float xp, float hunger, float food, float energy, float injury) {
         this.id = id;
         this.taming = taming;
-        this.training = training;
+        this.xp = xp;
         this.hunger = hunger;
         this.food = food;
         this.energy = energy;
@@ -39,8 +39,8 @@ public enum HorseTrait {
         return this.taming;
     }
 
-    public float training() {
-        return this.training;
+    public float xp() {
+        return this.xp;
     }
 
     public float hunger() {

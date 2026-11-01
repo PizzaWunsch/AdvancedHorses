@@ -8,6 +8,7 @@
     "AbstractHorseInvoker",
     "AbstractHorseMixin",
     "AbstractMountInventoryMenuMixin",
+    "ExperienceOrbMixin",
     "HorseInventoryMenuMixin",
     "RunAroundLikeCrazyGoalMixin"
   ],

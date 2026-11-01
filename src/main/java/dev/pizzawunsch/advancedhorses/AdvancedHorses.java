@@ -5,6 +5,7 @@ import dev.pizzawunsch.advancedhorses.network.ModNetworking;
 import dev.pizzawunsch.advancedhorses.race.RaceCommand;
 import dev.pizzawunsch.advancedhorses.race.RaceManager;
 import dev.pizzawunsch.advancedhorses.registry.ModBlocks;
+import dev.pizzawunsch.advancedhorses.registry.ModEffects;
 import dev.pizzawunsch.advancedhorses.registry.ModItems;
 import dev.pizzawunsch.advancedhorses.registry.ModRules;
 import dev.pizzawunsch.advancedhorses.taming.TamingInteractions;
@@ -21,6 +22,7 @@ public class AdvancedHorses implements ModInitializer {
     @Override
     public void onInitialize() {
         ModRules.init();
+        ModEffects.init();
         ModBlocks.init();
         ModItems.init();
         ModNetworking.register();

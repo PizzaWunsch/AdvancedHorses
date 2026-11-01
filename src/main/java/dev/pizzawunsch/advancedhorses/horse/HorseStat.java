@@ -4,9 +4,7 @@ public enum HorseStat {
     HUNGER(HorseStats.MAX_HUNGER),
     STAMINA(-1.0F),
     STRENGTH(-1.0F),
-    TRAINED_SPEED(0.0F),
-    TRAINED_STAMINA(0.0F),
-    TRAINED_STRENGTH(0.0F),
+    XP(0.0F),
     ENERGY(HorseStats.MAX_ENERGY),
     BOND(0.0F);
 

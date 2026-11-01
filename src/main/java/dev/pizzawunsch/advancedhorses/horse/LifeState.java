@@ -7,8 +7,10 @@ public final class LifeState {
     public float hunger = HorseStats.MAX_HUNGER;
     public float energy = HorseStats.MAX_ENERGY;
     public float bond;
-    public final float[] training = new float[3];
-    public final int[] trainingNotified = new int[3];
+    public float xp;
+    public boolean airborne;
+    public double jumpStartY;
+    public double jumpPeakY;
     public int restTicks;
     public double lastX;
     public double lastZ;

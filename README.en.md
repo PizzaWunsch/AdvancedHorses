@@ -2,7 +2,7 @@
 
 [🇩🇪 Deutsch](README.md) · 🇬🇧 English
 
-A Fabric mod for **Minecraft 26.3** that turns horses into real companions. You tame them by caring for their needs instead of by luck. Every horse has a breed, a temperament and its own stats, which are inherited and can be trained. Horses get hungry and tired, can get hurt, come running when you whistle and move in five shiftable gaits with much more realistic animations, hoofbeats and dust.
+A Fabric mod for **Minecraft 26.3** that turns horses into real companions. You tame them by caring for their needs instead of by luck. Every horse has a breed, a temperament and its own stats, which are inherited and grow with riding through a level system. Horses get hungry and tired, can get hurt, come running when you whistle and move in five shiftable gaits with much more realistic animations, hoofbeats and dust.
 
 ---
 
@@ -16,7 +16,8 @@ A Fabric mod for **Minecraft 26.3** that turns horses into real companions. You 
 - [Viewing stats](#viewing-stats)
 - [Breeds and temperaments](#breeds-and-temperaments)
 - [Gaits, controls and energy](#gaits-controls-and-energy)
-- [Stats, inheritance and training](#stats-inheritance-and-training)
+- [Potion of Stamina](#potion-of-stamina)
+- [Stats, inheritance and levels](#stats-inheritance-and-levels)
 - [Bond](#bond)
 - [Age](#age)
 - [Saddlebags](#saddlebags)
@@ -50,12 +51,14 @@ A Fabric mod for **Minecraft 26.3** that turns horses into real companions. You 
 | Breeds and temperaments | Warmblood, Thoroughbred, Draft horse, Pony and Mustang, plus six temperaments |
 | Gaits | Walk, trot, canter, gallop and racing gallop, shifted with **W** and **S** |
 | Energy | Gallop and racing gallop use up energy, and a winded horse shifts down |
+| Potion of Stamina | A brewable potion that stops a horse's energy from dropping for a while |
 | Stats | Speed, jump height, health, stamina, strength, bond, saturation and age |
-| Inheritance and training | Stats, breed and temperament are inherited, and riding trains a little |
-| Bond | Grows through feeding, brushing and riding, and improves training and whistle range |
+| Inheritance and levels | Stats, breed and temperament are inherited. Running and jumping earns experience, and every level improves one stat |
+| Bond | Grows through feeding, brushing and riding, and gives more experience and a longer whistle range |
 | Saddlebags | Up to 6 slots, unlocked by strength |
 | Hunger | Horses eat, graze, use the feeding trough and collapse without food |
 | Horseshoes and terrain | Horseshoes go into their own slot in the horse inventory. Paths make horses faster, sand and mud slower. |
+| Horseshoe enchantments | Unbreaking, Mending and three custom enchantments for speed, jump strength and stamina |
 | Injuries | Falls and overexertion can make a horse lame |
 | Whistling | Use the craftable horse whistle and your horse comes running |
 | Horse book | A craftable book listing all your horses with stats and last known location |
@@ -100,10 +103,10 @@ Instead of a config file, the mod uses **game rules**. They apply per world, are
 | `advancedhorses:hunger` | `true` | Tamed horses get hungry |
 | `advancedhorses:hunger_rate` | `100` | Hunger rate in percent (0–1000) |
 | `advancedhorses:taming_effort` | `100` | Taming effort in percent (10–1000) |
-| `advancedhorses:training_rate` | `100` | Training speed in percent (0–1000) |
+| `advancedhorses:xp_rate` | `100` | Experience gain in percent (0–1000) |
 | `advancedhorses:stamina` | `true` | Gallop and racing gallop use up energy |
 | `advancedhorses:injuries` | `true` | Horses can become lame |
-| `advancedhorses:aging` | `false` | Age affects speed and training |
+| `advancedhorses:aging` | `false` | Age affects speed and experience gain |
 | `advancedhorses:terrain_speed` | `true` | Ground and horseshoes affect speed |
 | `advancedhorses:resting` | `true` | Horses lie down on their own |
 
@@ -170,16 +173,17 @@ Names can be up to 32 characters long. Only the owner can rename the horse this 
 |---|---|
 | Breed · Temperament | e.g. "Thoroughbred · Eager" |
 | Age · Horseshoes | e.g. "7 years · Iron horseshoes" |
+| **Level** | Current level and experience towards the next one, e.g. `Level 12 · 540/1840 XP` (tamed only) |
 | **Speed** | Top speed in m/s |
 | **Jump height** | Approximate jump height in blocks |
 | **Health** | Current and maximum health |
-| **Stamina** | 0–100, determines energy and hunger use |
-| **Strength** | 0–100, determines the unlocked saddlebag slots (e.g. `4/6`) |
+| **Stamina** | 0–100 innate, plus level bonus. Determines energy and hunger use |
+| **Strength** | 0–100 innate, plus level bonus. Determines the unlocked saddlebag slots (e.g. `4/6`) |
 | **Bond** | 0–100 % |
 | **Saturation** | 0–100 % (tamed only) |
 | Status | Wild, resting, out of breath, lame, exhausted or the highest possible gait |
 
-The **light blue part** of a bar shows what training has added.
+The **light blue part** of a bar shows what levels and horseshoe enchantments have added. For stamina and strength the bonus is also shown in brackets, e.g. `74 (+12)`.
 
 ---
 
@@ -202,10 +206,10 @@ Every horse gets a **breed** and a **temperament** when it first appears. Donkey
 | Temperament | Effect |
 |---|---|
 | Calm | Taming −20 % |
-| Nervous | Taming +25 %, training +10 %, slightly higher energy use, gets hurt more easily |
+| Nervous | Taming +25 %, experience +10 %, slightly higher energy use, gets hurt more easily |
 | Greedy | 25 % more hunger, but food is 30 % more filling |
-| Lazy | Training −25 %, 15 % less hunger |
-| Eager | Training +25 %, slightly higher energy use |
+| Lazy | Experience −25 %, 15 % less hunger |
+| Eager | Experience +25 %, slightly higher energy use |
 | Brave | Taming +10 %, half as many injuries |
 
 ---
@@ -234,11 +238,38 @@ While riding, a display to the left of the hotbar shows:
 - the current gait,
 - locked gaits (red),
 - saturation (green),
-- energy (blue).
+- energy (blue, gold while a Potion of Stamina is active).
 
 ---
 
-## Stats, inheritance and training
+## Potion of Stamina
+
+The **Potion of Stamina** works **only on horses** (including donkeys and mules). While it is active, **energy does not drop**: gallop and racing gallop go on without a break, and the horse cannot get out of breath. Energy still recovers as usual.
+
+| Potion | Duration |
+|---|---|
+| Potion of Stamina | 3:00 |
+| Potion of Stamina (extended) | 8:00 |
+
+**How a horse gets the potion:**
+
+- **Right-click** a tamed horse with the potion. It drinks it and you get the empty bottle back.
+- Throw a **splash** or **lingering potion**. This also works while riding and on wild horses.
+
+Drinking the potion yourself does nothing. While it is active on the horse, the energy bar glows gold.
+
+**Brewing** (in a brewing stand, like vanilla potions):
+
+| Ingredient | Result |
+|---|---|
+| Awkward Potion + **hay bale** | Potion of Stamina |
+| Potion of Stamina + **redstone** | extended to 8:00 |
+| + **gunpowder** | splash potion |
+| Splash potion + **dragon's breath** | lingering potion |
+
+---
+
+## Stats, inheritance and levels
 
 ### Inheritance
 
@@ -249,15 +280,56 @@ While riding, a display to the left of the hotbar shows:
 | Breed | Usually from one parent. Different breeds have a 10 % chance of a Warmblood foal, and a donkey parent always gives one. |
 | Temperament | 40 % from the mother, 40 % from the father, 20 % random |
 
-### Training
+### Levels and experience
 
-| Stat | Trained by | Maximum bonus |
-|---|---|---|
-| Speed | Gallop and racing gallop | +8 % |
-| Stamina | Trot and faster, with faster gaits counting more | +12 |
-| Strength | Any riding, faster with items in the saddlebags | +15 |
+Tamed horses earn **experience (XP)** while ridden and level up to **level 50**.
 
-How fast a horse trains depends on the game rule `training_rate`, its temperament, its bond (up to +50 %) and, with aging enabled, its age. Training is **not** inherited, so good genes still matter most.
+| Action | Experience |
+|---|---|
+| Walk | 0.1 XP per block |
+| Trot | 0.4 XP per block |
+| Canter | 0.7 XP per block |
+| Gallop | 1 XP per block |
+| Racing gallop | 1.3 XP per block |
+| Jump | 4 XP per block of jump height |
+
+A jump only counts from about 0.6 blocks of height. Walking up steps or falling off cliffs gives nothing.
+
+**Experience needed:** level 1 needs 400 XP, and every further level needs 120 XP more. Level 50 takes 167,000 XP in total, which is about 167 km of galloping without any bonuses.
+
+How fast a horse earns experience depends on:
+
+- the game rule `xp_rate`,
+- its **temperament** (Eager +25 %, Nervous +10 %, Lazy −25 %),
+- its **bond** (up to +50 %),
+- its **load**: each filled saddlebag slot adds about +8 %, up to +50 %,
+- with aging enabled, its **age**.
+
+### Upgrades per level
+
+Every level improves **one** stat. The order repeats every five levels, so each stat gets exactly ten upgrades by level 50.
+
+| Level | Upgrade | Per upgrade | At level 50 |
+|---|---|---|---|
+| 1, 6, 11, … 46 | **Speed** | +1.5 % | +15 % |
+| 2, 7, 12, … 47 | **Jump strength** | +2.5 % | +25 % |
+| 3, 8, 13, … 48 | **Stamina** | +2.5 | +25 |
+| 4, 9, 14, … 49 | **Strength** | +3 | +30 |
+| 5, 10, 15, … 50 | **Health** | +1 health point | +10 (5 hearts) |
+
+On a level-up a sound plays, the horse tosses its head and the action bar shows which stat improved. A health upgrade fills the new health point right away.
+
+### Why horses still differ
+
+Upgrades are added **on top of the innate stats** instead of raising them to a fixed maximum:
+
+- Speed and jump strength rise by a **percentage**. A fast horse stays faster than a slow one, even at level 50.
+- Stamina, strength and health get a **flat bonus** that may go above 100. The gap between two horses stays the same.
+- Breed and temperament keep working as before.
+
+Two level 50 horses therefore differ just as much as they did at level 0. Levels are **not** inherited: foals start at level 0, so good genes still matter most.
+
+Horses from older versions of the mod have their previous training progress converted into a matching level once.
 
 ---
 
@@ -273,7 +345,7 @@ Bond (0–100 %) shows how much a horse trusts you. It grows through:
 
 A high bond gives you:
 
-- up to **+50 % training speed**,
+- up to **+50 % experience** while riding,
 - up to **30 % faster energy recovery**,
 - a larger **whistle range**: 48 blocks, up to 128 blocks at full bond.
 
@@ -287,8 +359,8 @@ When the game rule `advancedhorses:aging` is enabled (off by default):
 
 | Age | Effect |
 |---|---|
-| under 4 years | Training +30 % |
-| over 14 years | Training −30 % |
+| under 4 years | Experience +30 % |
+| over 14 years | Experience −30 % |
 | 18 years and older | Speed −8 % |
 | 24 years and older | Speed −15 % |
 
@@ -360,7 +432,7 @@ The **feeding trough** feeds your horses automatically.
 
 - Open the horse inventory (sneak and right-click a tamed horse).
 - Below the saddle and armor slots there is a **horseshoe slot** with a horseshoe icon. Put the horseshoes in there by dragging them or with shift-click.
-- Horseshoes have **durability** (iron 3,000, diamond 9,000). Every block you ride costs one point, and the durability bar is shown on the item. When they are worn out, they disappear.
+- Horseshoes have **durability** (iron 3,000, diamond 9,000). Every block you ride costs one point (less with Unbreaking), and the durability bar is shown on the item. When they are worn out, they disappear.
 - You can take them out at any time. When the horse dies, the horseshoes drop.
 - Foals cannot be shod.
 
@@ -384,6 +456,20 @@ The **feeding trough** feeds your horses automatically.
 | Stone, deepslate, netherrack etc. | depends on horseshoes |
 
 An unshod horse galloping on stone can get hurt over time.
+
+### Enchantments
+
+Horseshoes can be enchanted at an **enchanting table** and with books on an **anvil**. The effects apply while the horseshoes are in the horseshoe slot.
+
+| Enchantment | Max level | Effect |
+|---|---|---|
+| **Unbreaking** | III | Horseshoes wear out more slowly, just like tools |
+| **Mending** | I | Experience orbs you pick up **while riding** repair the horseshoes. Held in your hand it works as usual. |
+| **Fleetfoot** | III | +3 % speed per level (max +9 %) |
+| **Spring Hoof** | III | +5 % jump strength per level (max +15 %) |
+| **Endurance** | III | +5 stamina per level (max +15) |
+
+Fleetfoot, Spring Hoof and Endurance are also sold as books by librarians. All three can be combined. Like levels, they are added on top of the innate stats, so a level 50 horse with Fleetfoot III is +24 % faster than without.
 
 ---
 
@@ -420,7 +506,7 @@ The **horse whistle** is an item you craft (see [Recipes](#recipes)). Right-clic
 
 The **horse book** is an item you craft (see [Recipes](#recipes)). Right-click with it to open a list of all your tamed horses with:
 
-- name and breed,
+- name, level and breed,
 - speed, stamina, strength and bond,
 - saturation,
 - last known location and dimension.
@@ -527,6 +613,7 @@ In creative mode there is a separate **"Horses"** tab with everything related to
 - saddle and all horse armor (leather, copper, iron, gold, diamond, netherite)
 - lead, name tag, brush, chest for donkeys and mules
 - food: hay bale, wheat, sugar, apple, carrot, golden carrot, golden apple
+- Potions of Stamina (normal and extended, each as potion, splash potion and lingering potion)
 - spawn eggs for horse, donkey, mule, skeleton horse and zombie horse
 
 The vanilla items also stay in their usual tabs.
@@ -562,6 +649,12 @@ N   I   N
 ```
 D   .   D    D = diamond
 D   E   D    E = iron horseshoe
+```
+
+**Potion of Stamina** (brewing stand)
+```
+Awkward Potion + Hay bale            → Potion of Stamina
+Potion of Stamina + Redstone         → extended
 ```
 
 ---
@@ -609,14 +702,15 @@ src/main/java/dev/pizzawunsch/advancedhorses/
 ├── block/                           Feeding trough
 ├── book/                            Horse book (registry and storage)
 ├── horse/                           Gaits, stats, breeds, temperaments, horseshoes, hunger,
-│                                    energy, bond, age, injuries, pedigree, whistling
+│                                    energy, bond, levels, horseshoe enchantments, age,
+│                                    injuries, pedigree, whistling
 ├── inventory/                       Saddlebag slots with locking, horseshoe slot
 ├── item/                            Horse book, horse whistle
 ├── network/                         Packets (gait, horse book, naming)
 ├── race/                            Race tracks, timing, /horserace
-├── registry/                        Items, blocks, creative tab, game rules
+├── registry/                        Items, blocks, effects and potions, creative tab, game rules
 ├── taming/                          Needs, taming, interactions
-├── mixin/                           Hooks into the horse, horse inventory and bucking behavior
+├── mixin/                           Hooks into the horse, horse inventory, bucking behavior and mending
 │   └── client/                      Hooks into the model, renderer and inventory screen
 └── client/
     ├── AdvancedHorsesClient.java    Client entry point
@@ -626,8 +720,8 @@ src/main/java/dev/pizzawunsch/advancedhorses/
     └── screen/                      Naming window and horse book
 
 src/main/resources/
-├── assets/advancedhorses/           Languages, models, textures, blockstates
-└── data/                            Recipes, loot table, tool tag
+├── assets/advancedhorses/           Languages, models, textures, blockstates, effect icon
+└── data/                            Recipes, brewing recipes, enchantments, loot table, tags
 ```
 
 ---
@@ -640,7 +734,8 @@ src/main/resources/
 |---|---|
 | `AdvancedHorsesHUNGER`, `…ENERGY`, `…BOND` | Saturation, energy, bond |
 | `AdvancedHorsesSTAMINA`, `…STRENGTH` | Inherited stamina and strength |
-| `AdvancedHorsesTRAINED_SPEED`, `…_STAMINA`, `…_STRENGTH` | Training progress |
+| `AdvancedHorsesLEVEL`, `…XP` | Level and experience towards the next level |
+| `AdvancedHorsesSHOE_SPEED`, `…SHOE_JUMP`, `…SHOE_STAMINA` | Enchantment levels of the equipped horseshoes |
 | `AdvancedHorsesBREED`, `…TRAIT`, `…SHOES`, `…FLAGS`, `…AGE` | Breed, temperament, horseshoes, states, age |
 | `AdvancedHorsesShoe` | The equipped horseshoes (item including durability) |
 | `AdvancedHorsesBirth`, `…LameTicks`, `…ShoeWear` | Time of birth, healing time, wear of the current block |

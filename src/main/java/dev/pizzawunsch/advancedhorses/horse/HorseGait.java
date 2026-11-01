@@ -4,12 +4,12 @@ import dev.pizzawunsch.advancedhorses.taming.TamingManager;
 import net.minecraft.world.entity.animal.equine.AbstractHorse;
 
 public enum HorseGait {
-    STAND(0.0F, 0.0F),
-    WALK(0.3F, 0.008F),
-    TROT(0.55F, 0.016F),
-    CANTER(0.75F, 0.028F),
-    GALLOP(1.0F, 0.045F),
-    RACE(1.22F, 0.08F);
+    STAND(0.0F, 0.0F, 0.0F),
+    WALK(0.3F, 0.008F, 0.1F),
+    TROT(0.55F, 0.016F, 0.4F),
+    CANTER(0.75F, 0.028F, 0.7F),
+    GALLOP(1.0F, 0.045F, 1.0F),
+    RACE(1.22F, 0.08F, 1.3F);
 
     private static final HorseGait[] VALUES = values();
 
@@ -18,10 +18,12 @@ public enum HorseGait {
 
     private final float speedFactor;
     private final float hungerPerBlock;
+    private final float xpPerBlock;
 
-    HorseGait(float speedFactor, float hungerPerBlock) {
+    HorseGait(float speedFactor, float hungerPerBlock, float xpPerBlock) {
         this.speedFactor = speedFactor;
         this.hungerPerBlock = hungerPerBlock;
+        this.xpPerBlock = xpPerBlock;
     }
 
     public float speedFactor() {
@@ -30,6 +32,10 @@ public enum HorseGait {
 
     public float hungerPerBlock() {
         return this.hungerPerBlock;
+    }
+
+    public float xpPerBlock() {
+        return this.xpPerBlock;
     }
 
     public String translationKey() {

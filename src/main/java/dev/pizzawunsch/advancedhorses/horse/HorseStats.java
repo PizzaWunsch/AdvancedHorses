@@ -16,10 +16,6 @@ public final class HorseStats {
     public static final float MAX_ENERGY = 100.0F;
     public static final int MAX_SLOTS = 6;
 
-    public static final float MAX_SPEED_BONUS = 0.08F;
-    public static final float MAX_STAMINA_BONUS = 0.12F;
-    public static final float MAX_STRENGTH_BONUS = 0.15F;
-
     public static final double MIN_SPEED = 0.1125;
     public static final double MAX_SPEED = 0.3375;
 
@@ -122,14 +118,20 @@ public final class HorseStats {
         return Math.max(0.0F, get(horse, stat));
     }
 
+    public static float baseStamina(AbstractHorse horse) {
+        return Mth.clamp(genetic(horse, HorseStat.STAMINA) + breed(horse).stamina(), 0.0F, 1.0F);
+    }
+
+    public static float baseStrength(AbstractHorse horse) {
+        return Mth.clamp(genetic(horse, HorseStat.STRENGTH) + breed(horse).strength(), 0.0F, 1.0F);
+    }
+
     public static float stamina(AbstractHorse horse) {
-        return Mth.clamp(genetic(horse, HorseStat.STAMINA) + breed(horse).stamina()
-            + MAX_STAMINA_BONUS * get(horse, HorseStat.TRAINED_STAMINA), 0.0F, 1.0F);
+        return baseStamina(horse) + HorseLevel.bonus(horse, HorseUpgrade.STAMINA) + ShoeEnchantments.staminaBonus(horse);
     }
 
     public static float strength(AbstractHorse horse) {
-        return Mth.clamp(genetic(horse, HorseStat.STRENGTH) + breed(horse).strength()
-            + MAX_STRENGTH_BONUS * get(horse, HorseStat.TRAINED_STRENGTH), 0.0F, 1.0F);
+        return baseStrength(horse) + HorseLevel.bonus(horse, HorseUpgrade.STRENGTH);
     }
 
     public static float bond(AbstractHorse horse) {
@@ -137,7 +139,7 @@ public final class HorseStats {
     }
 
     public static float speedBonus(AbstractHorse horse) {
-        return MAX_SPEED_BONUS * get(horse, HorseStat.TRAINED_SPEED);
+        return HorseLevel.bonus(horse, HorseUpgrade.SPEED) + ShoeEnchantments.speedBonus(horse);
     }
 
     public static int ageYears(AbstractHorse horse) {
@@ -152,7 +154,7 @@ public final class HorseStats {
         return age >= 24 ? 0.85F : age >= 18 ? 0.92F : 1.0F;
     }
 
-    public static float ageTrainingFactor(AbstractHorse horse) {
+    public static float ageXpFactor(AbstractHorse horse) {
         if (!hasFlag(horse, HorseByte.FLAG_AGING)) {
             return 1.0F;
         }

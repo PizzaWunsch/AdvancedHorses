@@ -40,7 +40,8 @@ public final class GaitHud implements HudElement {
         boolean winded = HorseStats.hasFlag(horse, HorseByte.FLAG_WINDED);
         int energyW = WIDTH - 8;
         graphics.fill(x + 4, y + 21, x + 4 + energyW, y + 23, 0xFF2A2420);
-        graphics.fill(x + 4, y + 21, x + 4 + Math.round(energyW * energy), y + 23, winded ? 0xFFB0B0B0 : 0xFF5DB0E8);
+        int energyColor = HorseStats.hasFlag(horse, HorseByte.FLAG_STAMINA_POTION) ? 0xFFFFC940 : winded ? 0xFFB0B0B0 : 0xFF5DB0E8;
+        graphics.fill(x + 4, y + 21, x + 4 + Math.round(energyW * energy), y + 23, energyColor);
         if (HorseStats.hasFlag(horse, HorseByte.FLAG_LAME)) {
             Component lame = Component.translatable("advancedhorses.status.lame");
             graphics.text(font, lame, x + WIDTH - 4 - font.width(lame), y + 3, 0xFFE57373);

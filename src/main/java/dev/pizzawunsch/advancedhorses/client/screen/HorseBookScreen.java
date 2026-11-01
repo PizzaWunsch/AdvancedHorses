@@ -80,6 +80,7 @@ public class HorseBookScreen extends Screen {
         graphics.fill(x, y + 1, x + WIDTH, y + ROW - 2, ROW_BACKGROUND);
         HorseBreed breed = HorseBreed.byId(entry.breed());
         Component title = Component.literal(entry.name()).append(Component.literal("  "))
+            .append(Component.translatable("advancedhorses.stat.level", entry.level()).withColor(TITLE)).append(Component.literal("  "))
             .append(Component.translatable(breed.translationKey()).withColor(HINT));
         graphics.text(this.font, title, x + 6, y + 4, TEXT);
 

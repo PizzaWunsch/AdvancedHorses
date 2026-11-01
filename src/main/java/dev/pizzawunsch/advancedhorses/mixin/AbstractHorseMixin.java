@@ -12,6 +12,7 @@ import dev.pizzawunsch.advancedhorses.horse.HorseStats;
 import dev.pizzawunsch.advancedhorses.horse.Horseshoe;
 import dev.pizzawunsch.advancedhorses.inventory.HorseshoeContainer;
 import dev.pizzawunsch.advancedhorses.horse.LifeState;
+import dev.pizzawunsch.advancedhorses.horse.ShoeEnchantments;
 import dev.pizzawunsch.advancedhorses.taming.TamingData;
 import dev.pizzawunsch.advancedhorses.taming.TamingManager;
 import dev.pizzawunsch.advancedhorses.taming.TamingState;
@@ -61,6 +62,8 @@ public abstract class AbstractHorseMixin implements AdvancedHorseAccess {
     @SuppressWarnings("unchecked")
     private static final EntityDataAccessor<Byte>[] ADVANCEDHORSES_BYTES = new EntityDataAccessor[HorseByte.values().length];
     @Unique
+    private static final int LEGACY_TRAINING_LEVEL = 30;
+    @Unique
     private static final EntityDataAccessor<String> ADVANCEDHORSES_PEDIGREE = SynchedEntityData.defineId(AbstractHorse.class, EntityDataSerializers.STRING);
 
     static {
@@ -88,7 +91,9 @@ public abstract class AbstractHorseMixin implements AdvancedHorseAccess {
     private void advancedhorses$onShoesChanged() {
         AbstractHorse horse = this.advancedhorses$self();
         if (horse.level() != null && !horse.level().isClientSide()) {
-            int id = Horseshoe.of(this.advancedhorses$shoes.getItem(0)).id();
+            ItemStack stack = this.advancedhorses$shoes.getItem(0);
+            ShoeEnchantments.update(horse, stack);
+            int id = Horseshoe.of(stack).id();
             if (this.advancedhorses$getByte(HorseByte.SHOES) != id) {
                 this.advancedhorses$setByte(HorseByte.SHOES, id);
                 this.advancedhorses$lifeState.shoeWear = 0.0F;
@@ -404,7 +409,14 @@ public abstract class AbstractHorseMixin implements AdvancedHorseAccess {
         this.advancedhorses$setByte(HorseByte.SHOES, Horseshoe.of(shoes).id());
         this.advancedhorses$shoes.setItem(0, shoes);
         this.advancedhorses$lifeState.shoeWear = input.getFloatOr("AdvancedHorsesShoeWear", 0.0F);
-        HorseLife.loadTraining(horse);
+        if (input.getIntOr(HorseByte.LEVEL.saveKey(), -1) < 0) {
+            float trained = 0.0F;
+            for (String key : new String[]{"TRAINED_SPEED", "TRAINED_STAMINA", "TRAINED_STRENGTH"}) {
+                trained += Math.max(0.0F, input.getFloatOr("AdvancedHorses" + key, 0.0F));
+            }
+            this.advancedhorses$setByte(HorseByte.LEVEL, Math.round(Math.min(1.0F, trained / 3.0F) * LEGACY_TRAINING_LEVEL));
+        }
+        HorseLife.loadState(horse);
         this.advancedhorses$setRest(input.getIntOr("AdvancedHorsesRest", HorseRest.NONE));
         this.advancedhorses$lifeState.restTicks = input.getIntOr("AdvancedHorsesRestTicks", 0);
 

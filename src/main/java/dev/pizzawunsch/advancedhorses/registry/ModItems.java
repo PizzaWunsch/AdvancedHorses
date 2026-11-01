@@ -16,12 +16,13 @@ import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.alchemy.PotionContents;
 
 public final class ModItems {
     public static final Item HORSE_BOOK = register("horse_book", HorseBookItem::new, new Item.Properties().stacksTo(1));
     public static final Item HORSE_WHISTLE = register("horse_whistle", HorseWhistleItem::new, new Item.Properties().stacksTo(1));
-    public static final Item IRON_HORSESHOE = register("iron_horseshoe", Item::new, new Item.Properties().durability(3000));
-    public static final Item DIAMOND_HORSESHOE = register("diamond_horseshoe", Item::new, new Item.Properties().durability(9000));
+    public static final Item IRON_HORSESHOE = register("iron_horseshoe", Item::new, new Item.Properties().durability(3000).enchantable(9));
+    public static final Item DIAMOND_HORSESHOE = register("diamond_horseshoe", Item::new, new Item.Properties().durability(9000).enchantable(10));
     public static final Item TROUGH = registerBlockItem("trough");
 
     public static final ResourceKey<CreativeModeTab> TAB_KEY = ResourceKey.create(Registries.CREATIVE_MODE_TAB,
@@ -57,6 +58,10 @@ public final class ModItems {
                 output.accept(Items.CARROT);
                 output.accept(Items.GOLDEN_CARROT);
                 output.accept(Items.GOLDEN_APPLE);
+                for (Item item : new Item[]{Items.POTION, Items.SPLASH_POTION, Items.LINGERING_POTION}) {
+                    output.accept(PotionContents.createItemStack(item, ModEffects.STAMINA_POTION));
+                    output.accept(PotionContents.createItemStack(item, ModEffects.LONG_STAMINA_POTION));
+                }
                 output.accept(Items.CHEST);
                 output.accept(Items.HORSE_SPAWN_EGG);
                 output.accept(Items.DONKEY_SPAWN_EGG);

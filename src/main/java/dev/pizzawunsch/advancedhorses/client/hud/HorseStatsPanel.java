@@ -3,6 +3,7 @@ package dev.pizzawunsch.advancedhorses.client.hud;
 import dev.pizzawunsch.advancedhorses.horse.HorseBreed;
 import dev.pizzawunsch.advancedhorses.horse.HorseByte;
 import dev.pizzawunsch.advancedhorses.horse.HorseGait;
+import dev.pizzawunsch.advancedhorses.horse.HorseLevel;
 import dev.pizzawunsch.advancedhorses.horse.HorseRest;
 import dev.pizzawunsch.advancedhorses.horse.HorseStat;
 import dev.pizzawunsch.advancedhorses.horse.HorseStats;
@@ -33,13 +34,13 @@ public final class HorseStatsPanel {
     private static final int HINT = 0xFF999999;
     private static final int WARNING = 0xFFE57373;
     private static final int BAR_BACK = 0xFF2A2420;
-    private static final int TRAINED = 0xFFB3E5FC;
+    private static final int LEVELED = 0xFFB3E5FC;
 
     private HorseStatsPanel() {
     }
 
     private static int bars(AbstractHorse horse) {
-        return horse.isTamed() ? 7 : 6;
+        return horse.isTamed() ? 8 : 6;
     }
 
     public static int height(AbstractHorse horse) {
@@ -71,17 +72,32 @@ public final class HorseStatsPanel {
             x + 6, lineY, LABEL);
 
         int rowY = lineY + LINE + 3;
+        if (tamed) {
+            int level = HorseLevel.level(horse);
+            float needed = HorseLevel.xpForNext(level);
+            float xp = HorseStats.get(horse, HorseStat.XP);
+            String progress = level >= HorseLevel.MAX_LEVEL
+                ? Component.translatable("advancedhorses.stat.level.max").getString()
+                : Math.round(xp) + "/" + Math.round(needed) + " " + Component.translatable("advancedhorses.stat.xp").getString();
+            graphics.text(font, Component.translatable("advancedhorses.stat.level", level), x + 6, rowY, TITLE);
+            graphics.text(font, progress, x + WIDTH - 6 - font.width(progress), rowY, VALUE);
+            bar(graphics, x, rowY, level >= HorseLevel.MAX_LEVEL ? 1.0F : xp / needed, 0.0F, 0xFFFFD27F);
+            rowY += ROW;
+        }
+
         double baseSpeed = horse.getAttributeBaseValue(Attributes.MOVEMENT_SPEED) * breed.speed();
         double speed = HorseStats.speed(horse);
         float speedRating = rating(baseSpeed, HorseStats.MIN_SPEED, HorseStats.MAX_SPEED);
-        float speedTrained = rating(speed, HorseStats.MIN_SPEED, HorseStats.MAX_SPEED) - speedRating;
+        float speedBonus = rating(speed, HorseStats.MIN_SPEED, HorseStats.MAX_SPEED) - speedRating;
         row(graphics, font, x, rowY, "advancedhorses.stat.speed",
-            String.format(Locale.ROOT, "%.1f m/s", HorseStats.blocksPerSecond(speed)), speedRating, speedTrained, 0xFFE0A030);
+            String.format(Locale.ROOT, "%.1f m/s", HorseStats.blocksPerSecond(speed)), speedRating, speedBonus, 0xFFE0A030);
         rowY += ROW;
 
+        double baseJump = horse.getAttributeBaseValue(Attributes.JUMP_STRENGTH);
         double jump = horse.getAttributeValue(Attributes.JUMP_STRENGTH);
+        float jumpRating = rating(baseJump, 0.4, 1.0);
         row(graphics, font, x, rowY, "advancedhorses.stat.jump",
-            String.format(Locale.ROOT, "%.1f", HorseStats.jumpHeight(jump)), rating(jump, 0.4, 1.0), 0.0F, 0xFF81C784);
+            String.format(Locale.ROOT, "%.1f", HorseStats.jumpHeight(jump)), jumpRating, rating(jump, 0.4, 1.0) - jumpRating, 0xFF81C784);
         rowY += ROW;
 
         float health = horse.getHealth();
@@ -90,12 +106,12 @@ public final class HorseStatsPanel {
             Mth.ceil(health) + "/" + Mth.ceil(maxHealth), health / maxHealth, 0.0F, 0xFFE57373);
         rowY += ROW;
 
-        float staminaBase = Mth.clamp(HorseStats.genetic(horse, HorseStat.STAMINA) + breed.stamina(), 0.0F, 1.0F);
+        float staminaBase = HorseStats.baseStamina(horse);
         float stamina = HorseStats.stamina(horse);
         row(graphics, font, x, rowY, "advancedhorses.stat.stamina", withBonus(stamina, staminaBase), staminaBase, stamina - staminaBase, 0xFF64B5F6);
         rowY += ROW;
 
-        float strengthBase = Mth.clamp(HorseStats.genetic(horse, HorseStat.STRENGTH) + breed.strength(), 0.0F, 1.0F);
+        float strengthBase = HorseStats.baseStrength(horse);
         float strength = HorseStats.strength(horse);
         String strengthText = withBonus(strength, strengthBase);
         if (horse instanceof Horse) {
@@ -190,21 +206,24 @@ public final class HorseStatsPanel {
     }
 
     private static void row(GuiGraphicsExtractor graphics, Font font, int x, int y, String label, String value,
-                            float base, float trained, int color) {
+                            float base, float bonus, int color) {
         graphics.text(font, Component.translatable(label), x + 6, y, LABEL);
         graphics.text(font, value, x + WIDTH - 6 - font.width(value), y, VALUE);
+        bar(graphics, x, y, base, bonus, color);
+    }
 
+    private static void bar(GuiGraphicsExtractor graphics, int x, int y, float base, float bonus, int color) {
         int barX = x + 6;
         int barY = y + 10;
         int barW = WIDTH - 12;
         graphics.fill(barX, barY, barX + barW, barY + 3, BAR_BACK);
         int baseW = Math.round(barW * Mth.clamp(base, 0.0F, 1.0F));
-        int trainedW = Math.round(barW * Mth.clamp(base + trained, 0.0F, 1.0F)) - baseW;
+        int bonusW = Math.round(barW * Mth.clamp(base + bonus, 0.0F, 1.0F)) - baseW;
         if (baseW > 0) {
             graphics.fill(barX, barY, barX + baseW, barY + 3, color);
         }
-        if (trainedW > 0) {
-            graphics.fill(barX + baseW, barY, barX + baseW + trainedW, barY + 3, TRAINED);
+        if (bonusW > 0) {
+            graphics.fill(barX + baseW, barY, barX + baseW + bonusW, barY + 3, LEVELED);
         }
     }
 

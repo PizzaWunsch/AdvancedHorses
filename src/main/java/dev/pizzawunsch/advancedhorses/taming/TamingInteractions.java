@@ -30,6 +30,9 @@ public final class TamingInteractions {
 
         ItemStack stack = player.getItemInHand(hand);
         if (horse.isTamed() && TamingManager.isTameableType(horse)) {
+            if (HorseLife.giveStaminaPotion(horse, player, hand)) {
+                return InteractionResult.SUCCESS;
+            }
             if (stack.is(Items.BRUSH)) {
                 if (player instanceof ServerPlayer serverPlayer) {
                     horse.level().playSound(null, horse.getX(), horse.getY(), horse.getZ(), SoundEvents.ARMADILLO_BRUSH, SoundSource.NEUTRAL, 1.0F, 1.1F);

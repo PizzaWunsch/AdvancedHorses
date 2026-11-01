@@ -12,7 +12,7 @@ public final class ModRules {
     public static final GameRule<Boolean> HUNGER = bool("hunger", true);
     public static final GameRule<Integer> HUNGER_RATE = percent("hunger_rate", 100, 0, 1000);
     public static final GameRule<Integer> TAMING_EFFORT = percent("taming_effort", 100, 10, 1000);
-    public static final GameRule<Integer> TRAINING_RATE = percent("training_rate", 100, 0, 1000);
+    public static final GameRule<Integer> XP_RATE = percent("xp_rate", 100, 0, 1000);
     public static final GameRule<Boolean> STAMINA = bool("stamina", true);
     public static final GameRule<Boolean> INJURIES = bool("injuries", true);
     public static final GameRule<Boolean> AGING = bool("aging", false);

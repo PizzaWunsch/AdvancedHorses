@@ -2,7 +2,7 @@
 
 🇩🇪 Deutsch · [🇬🇧 English](README.en.md)
 
-Eine Fabric-Mod für **Minecraft 26.3**, die Pferde zu echten Begleitern macht. Du zähmst sie über ihre Bedürfnisse statt durch Zufall. Jedes Pferd hat eine Rasse, ein Wesen und eigene Werte, die vererbt und trainiert werden. Pferde werden hungrig, werden müde, können sich verletzen, kommen auf einen Pfiff angelaufen und bewegen sich in fünf schaltbaren Gangarten mit deutlich realistischeren Animationen, Hufschlägen und Staub.
+Eine Fabric-Mod für **Minecraft 26.3**, die Pferde zu echten Begleitern macht. Du zähmst sie über ihre Bedürfnisse statt durch Zufall. Jedes Pferd hat eine Rasse, ein Wesen und eigene Werte, die vererbt werden und durch ein Level-System mit dem Reiten wachsen. Pferde werden hungrig, werden müde, können sich verletzen, kommen auf einen Pfiff angelaufen und bewegen sich in fünf schaltbaren Gangarten mit deutlich realistischeren Animationen, Hufschlägen und Staub.
 
 ---
 
@@ -16,7 +16,8 @@ Eine Fabric-Mod für **Minecraft 26.3**, die Pferde zu echten Begleitern macht. 
 - [Werte ansehen](#werte-ansehen)
 - [Rassen und Wesen](#rassen-und-wesen)
 - [Gangarten, Steuerung und Energie](#gangarten-steuerung-und-energie)
-- [Werte, Vererbung und Training](#werte-vererbung-und-training)
+- [Trank der Ausdauer](#trank-der-ausdauer)
+- [Werte, Vererbung und Level](#werte-vererbung-und-level)
 - [Bindung](#bindung)
 - [Alter](#alter)
 - [Satteltaschen](#satteltaschen)
@@ -50,12 +51,14 @@ Eine Fabric-Mod für **Minecraft 26.3**, die Pferde zu echten Begleitern macht. 
 | Rassen und Wesen | Warmblut, Vollblut, Kaltblut, Pony, Mustang, dazu sechs Charaktere |
 | Gangarten | Schritt, Trab, Kanter, Galopp, Renngalopp, geschaltet mit **W** und **S** |
 | Energie | Galopp und Renngalopp verbrauchen Energie, ein erschöpftes Pferd schaltet zurück |
+| Trank der Ausdauer | Braubarer Trank, mit dem die Energie eines Pferdes eine Zeit lang nicht sinkt |
 | Werte | Tempo, Sprunghöhe, Gesundheit, Ausdauer, Stärke, Bindung, Sättigung, Alter |
-| Vererbung und Training | Werte, Rasse und Wesen werden vererbt, Reiten trainiert ein wenig |
-| Bindung | Wächst durch Füttern, Bürsten und Reiten, verbessert Training und Rufweite |
+| Vererbung und Level | Werte, Rasse und Wesen werden vererbt. Laufen und Springen bringt Erfahrung, jedes Level verbessert einen Wert |
+| Bindung | Wächst durch Füttern, Bürsten und Reiten, bringt mehr Erfahrung und eine größere Rufweite |
 | Satteltaschen | Bis zu 6 Plätze, freigeschaltet über die Stärke |
 | Hunger | Pferde fressen, grasen, gehen an den Futtertrog und brechen ohne Futter zusammen |
 | Hufeisen und Untergrund | Hufeisen kommen in einen eigenen Slot im Pferdeinventar. Wege machen schneller, Sand und Schlamm langsamer. |
+| Hufeisen-Verzauberungen | Haltbarkeit, Reparatur und drei eigene Verzauberungen für Tempo, Sprungkraft und Ausdauer |
 | Verletzungen | Stürze und Überanstrengung lassen Pferde lahmen |
 | Pfeifen | Mit der craftbaren Pferdepfeife kommt dein Pferd angelaufen |
 | Pferdebuch | Ein craftbares Buch, das alle deine Pferde mit Werten und letztem Standort zeigt |
@@ -100,10 +103,10 @@ Statt einer Konfigurationsdatei nutzt die Mod **Gamerules**. Sie gelten pro Welt
 | `advancedhorses:hunger` | `true` | Gezähmte Pferde werden hungrig |
 | `advancedhorses:hunger_rate` | `100` | Hungerverbrauch in Prozent (0–1000) |
 | `advancedhorses:taming_effort` | `100` | Zähmungsaufwand in Prozent (10–1000) |
-| `advancedhorses:training_rate` | `100` | Trainingsgeschwindigkeit in Prozent (0–1000) |
+| `advancedhorses:xp_rate` | `100` | Erfahrungsgewinn in Prozent (0–1000) |
 | `advancedhorses:stamina` | `true` | Energie verbrauchen bei Galopp und Renngalopp |
 | `advancedhorses:injuries` | `true` | Pferde können lahmen |
-| `advancedhorses:aging` | `false` | Alter wirkt sich auf Tempo und Training aus |
+| `advancedhorses:aging` | `false` | Alter wirkt sich auf Tempo und Erfahrungsgewinn aus |
 | `advancedhorses:terrain_speed` | `true` | Untergrund und Hufeisen beeinflussen das Tempo |
 | `advancedhorses:resting` | `true` | Pferde legen sich von selbst hin |
 
@@ -170,16 +173,17 @@ Erlaubt sind bis zu 32 Zeichen. Nur der Besitzer kann das Pferd so umbenennen.
 |---|---|
 | Rasse · Wesen | z. B. „Vollblut · Ehrgeizig“ |
 | Alter · Hufeisen | z. B. „7 Jahre · Eisenhufeisen“ |
+| **Level** | Aktuelles Level und Erfahrung bis zum nächsten, z. B. `Level 12 · 540/1840 EP` (nur gezähmt) |
 | **Tempo** | Höchstgeschwindigkeit in m/s |
 | **Sprunghöhe** | Ungefähre Sprunghöhe in Blöcken |
 | **Gesundheit** | Aktuelle und maximale Lebenspunkte |
-| **Ausdauer** | 0–100, bestimmt Energie- und Hungerverbrauch |
-| **Stärke** | 0–100, bestimmt die freien Satteltaschen-Plätze (z. B. `4/6`) |
+| **Ausdauer** | 0–100 angeboren, plus Level-Bonus. Bestimmt Energie- und Hungerverbrauch |
+| **Stärke** | 0–100 angeboren, plus Level-Bonus. Bestimmt die freien Satteltaschen-Plätze (z. B. `4/6`) |
 | **Bindung** | 0–100 % |
 | **Sättigung** | 0–100 % (nur gezähmt) |
 | Zustand | Wild, ruht, außer Atem, lahmt, erschöpft oder die höchste mögliche Gangart |
 
-Der **hellblaue Teil** eines Balkens zeigt, was das Training hinzugefügt hat.
+Der **hellblaue Teil** eines Balkens zeigt, was Level und Hufeisen-Verzauberungen hinzugefügt haben. Bei Ausdauer und Stärke steht der Bonus zusätzlich in Klammern, z. B. `74 (+12)`.
 
 ---
 
@@ -202,10 +206,10 @@ Jedes Pferd bekommt beim ersten Auftauchen eine **Rasse** und ein **Wesen**. Ese
 | Wesen | Wirkung |
 |---|---|
 | Gelassen | Zähmung −20 % |
-| Nervös | Zähmung +25 %, Training +10 %, etwas mehr Energieverbrauch, verletzt sich leichter |
+| Nervös | Zähmung +25 %, Erfahrung +10 %, etwas mehr Energieverbrauch, verletzt sich leichter |
 | Verfressen | 25 % mehr Hunger, aber Futter sättigt 30 % besser |
-| Faul | Training −25 %, 15 % weniger Hunger |
-| Ehrgeizig | Training +25 %, etwas mehr Energieverbrauch |
+| Faul | Erfahrung −25 %, 15 % weniger Hunger |
+| Ehrgeizig | Erfahrung +25 %, etwas mehr Energieverbrauch |
 | Mutig | Zähmung +10 %, halb so viele Verletzungen |
 
 ---
@@ -234,11 +238,38 @@ Beim Reiten zeigt eine Anzeige links neben der Hotbar:
 - die Gangart,
 - die gesperrten Stufen (rot),
 - die Sättigung (grün),
-- die Energie (blau).
+- die Energie (blau, golden während ein Trank der Ausdauer wirkt).
 
 ---
 
-## Werte, Vererbung und Training
+## Trank der Ausdauer
+
+Der **Trank der Ausdauer** wirkt **nur bei Pferden** (auch Esel und Maultiere). Solange er wirkt, **sinkt die Energie nicht**: Galopp und Renngalopp gehen ohne Pause, und das Pferd kann nicht außer Atem geraten. Die Energie erholt sich trotzdem wie gewohnt.
+
+| Trank | Dauer |
+|---|---|
+| Trank der Ausdauer | 3:00 |
+| Trank der Ausdauer (verlängert) | 8:00 |
+
+**So bekommt ein Pferd den Trank:**
+
+- **Rechtsklick** mit dem Trank auf ein gezähmtes Pferd. Es trinkt ihn, du bekommst die leere Flasche zurück.
+- **Wurftrank** oder **Verweiltrank** werfen. Das wirkt auch, während du reitest, und auf wilde Pferde.
+
+Trinkst du den Trank selbst, passiert nichts. Während er beim Pferd wirkt, leuchtet die Energieanzeige golden.
+
+**Brauen** (wie Vanilla-Tränke im Braustand):
+
+| Zutat | Ergebnis |
+|---|---|
+| Seltsamer Trank + **Heuballen** | Trank der Ausdauer |
+| Trank der Ausdauer + **Redstone** | verlängert auf 8:00 |
+| + **Schwarzpulver** | Wurftrank |
+| Wurftrank + **Drachenatem** | Verweiltrank |
+
+---
+
+## Werte, Vererbung und Level
 
 ### Vererbung
 
@@ -249,15 +280,56 @@ Beim Reiten zeigt eine Anzeige links neben der Hotbar:
 | Rasse | Meist von einem Elternteil. Bei verschiedenen Rassen entsteht mit 10 % ein Warmblut, mit Esel immer. |
 | Wesen | 40 % von der Mutter, 40 % vom Vater, 20 % zufällig |
 
-### Training
+### Level und Erfahrung
 
-| Wert | Trainiert durch | Maximaler Bonus |
-|---|---|---|
-| Tempo | Galopp und Renngalopp | +8 % |
-| Ausdauer | Ab Trab, schnellere Gänge zählen mehr | +12 |
-| Stärke | Jedes Reiten, mit Gepäck schneller | +15 |
+Gezähmte Pferde sammeln beim Reiten **Erfahrung (EP)** und steigen bis **Level 50** auf.
 
-Wie schnell trainiert wird, hängt ab von der Gamerule `training_rate`, dem Wesen, der Bindung (bis +50 %) und mit aktivem Altern auch vom Alter. Trainierte Werte werden **nicht** vererbt. Gute Gene bleiben entscheidend.
+| Aktion | Erfahrung |
+|---|---|
+| Schritt | 0,1 EP pro Block |
+| Trab | 0,4 EP pro Block |
+| Kanter | 0,7 EP pro Block |
+| Galopp | 1 EP pro Block |
+| Renngalopp | 1,3 EP pro Block |
+| Sprung | 4 EP pro Block Sprunghöhe |
+
+Ein Sprung zählt erst ab etwa 0,6 Blöcken Höhe. Stufen hochlaufen oder von Klippen fallen bringt nichts.
+
+**Benötigte Erfahrung:** Level 1 braucht 400 EP, jedes weitere Level 120 EP mehr. Level 50 erreichst du nach insgesamt 167.000 EP, ohne Boni also nach etwa 167 km Galopp.
+
+Wie schnell ein Pferd Erfahrung sammelt, hängt ab von:
+
+- der Gamerule `xp_rate`,
+- dem **Wesen** (Ehrgeizig +25 %, Nervös +10 %, Faul −25 %),
+- der **Bindung** (bis +50 %),
+- dem **Gepäck**: jeder belegte Satteltaschen-Platz bringt etwa +8 %, bis zu +50 %,
+- mit aktivem Altern auch dem **Alter**.
+
+### Upgrades pro Level
+
+Jedes Level verbessert **einen** Wert. Die Reihenfolge wiederholt sich alle fünf Level, so bekommt jeder Wert bis Level 50 genau zehn Upgrades.
+
+| Level | Upgrade | Pro Upgrade | Bei Level 50 |
+|---|---|---|---|
+| 1, 6, 11, … 46 | **Tempo** | +1,5 % | +15 % |
+| 2, 7, 12, … 47 | **Sprungkraft** | +2,5 % | +25 % |
+| 3, 8, 13, … 48 | **Ausdauer** | +2,5 | +25 |
+| 4, 9, 14, … 49 | **Stärke** | +3 | +30 |
+| 5, 10, 15, … 50 | **Gesundheit** | +1 Lebenspunkt | +10 (5 Herzen) |
+
+Beim Aufstieg erklingt ein Signal, das Pferd wirft den Kopf hoch und die Aktionsleiste zeigt, welcher Wert besser geworden ist. Bei einem Gesundheits-Upgrade wird der neue Lebenspunkt gleich aufgefüllt.
+
+### Warum Pferde trotzdem verschieden bleiben
+
+Die Upgrades kommen **auf die angeborenen Werte obendrauf**, statt sie auf einen festen Höchstwert anzuheben:
+
+- Tempo und Sprungkraft steigen **prozentual**. Ein schnelles Pferd bleibt auch auf Level 50 schneller als ein langsames.
+- Ausdauer, Stärke und Gesundheit bekommen einen **festen Bonus**, der über 100 hinausgehen darf. Der Abstand zwischen zwei Pferden bleibt also gleich.
+- Rasse und Wesen wirken weiter wie gewohnt.
+
+Zwei Pferde auf Level 50 unterscheiden sich damit genauso stark wie auf Level 0. Level werden **nicht** vererbt: Fohlen starten bei Level 0, gute Gene bleiben entscheidend.
+
+Pferde aus älteren Versionen der Mod bekommen ihren bisherigen Trainingsstand einmalig in ein passendes Level umgerechnet.
 
 ---
 
@@ -273,7 +345,7 @@ Die Bindung (0–100 %) zeigt, wie sehr dir ein Pferd vertraut. Sie wächst durc
 
 Eine hohe Bindung bringt dir:
 
-- bis zu **+50 % Trainingsgeschwindigkeit**,
+- bis zu **+50 % Erfahrung** beim Reiten,
 - bis zu **30 % schnellere Energieerholung**,
 - eine größere **Rufweite** beim Pfeifen: 48 Blöcke, bis 128 Blöcke bei voller Bindung.
 
@@ -287,8 +359,8 @@ Ist die Gamerule `advancedhorses:aging` aktiv (standardmäßig aus):
 
 | Alter | Wirkung |
 |---|---|
-| unter 4 Jahre | Training +30 % |
-| über 14 Jahre | Training −30 % |
+| unter 4 Jahre | Erfahrung +30 % |
+| über 14 Jahre | Erfahrung −30 % |
 | ab 18 Jahre | Tempo −8 % |
 | ab 24 Jahre | Tempo −15 % |
 
@@ -360,7 +432,7 @@ Der **Futtertrog** füttert deine Pferde automatisch.
 
 - Öffne das Pferdeinventar (Schleichen + Rechtsklick auf ein gezähmtes Pferd).
 - Unter dem Sattel- und Rüstungsplatz gibt es einen **Hufeisen-Slot** mit einem Hufeisen-Symbol. Lege die Hufeisen dort hinein, per Drag-and-drop oder mit Shift-Klick.
-- Hufeisen haben eine **Haltbarkeit** (Eisen 3.000, Diamant 9.000). Jeder gerittene Block kostet einen Punkt, der Haltbarkeitsbalken ist am Item zu sehen. Sind sie abgelaufen, verschwinden sie.
+- Hufeisen haben eine **Haltbarkeit** (Eisen 3.000, Diamant 9.000). Jeder gerittene Block kostet einen Punkt (mit Haltbarkeit weniger), der Haltbarkeitsbalken ist am Item zu sehen. Sind sie abgelaufen, verschwinden sie.
 - Herausnehmen geht jederzeit. Stirbt das Pferd, fallen die Hufeisen heraus.
 - Fohlen können nicht beschlagen werden.
 
@@ -384,6 +456,20 @@ Der **Futtertrog** füttert deine Pferde automatisch.
 | Stein, Tiefenschiefer, Netherrack usw. | je nach Hufeisen |
 
 Unbeschlagen im Galopp auf Stein kann sich ein Pferd mit der Zeit verletzen.
+
+### Verzauberungen
+
+Hufeisen lassen sich am **Zaubertisch** und am **Amboss** mit Büchern verzaubern. Die Wirkung gilt, solange die Hufeisen im Hufeisen-Slot liegen.
+
+| Verzauberung | Max. Stufe | Wirkung |
+|---|---|---|
+| **Haltbarkeit** | III | Hufeisen nutzen sich langsamer ab, wie bei Werkzeugen |
+| **Reparatur** | I | Erfahrungskugeln, die du **beim Reiten** aufsammelst, reparieren die Hufeisen. In der Hand funktioniert es wie gewohnt. |
+| **Leichtfüßigkeit** | III | +3 % Tempo pro Stufe (max. +9 %) |
+| **Federhuf** | III | +5 % Sprungkraft pro Stufe (max. +15 %) |
+| **Durchhaltevermögen** | III | +5 Ausdauer pro Stufe (max. +15) |
+
+Leichtfüßigkeit, Federhuf und Durchhaltevermögen gibt es auch als Bücher beim Bibliothekar. Alle drei lassen sich kombinieren. Wie die Level kommen sie auf die angeborenen Werte obendrauf, ein Pferd auf Level 50 mit Leichtfüßigkeit III ist also +24 % schneller als ohne.
 
 ---
 
@@ -420,7 +506,7 @@ Die **Pferdepfeife** ist ein Item, das du craftest (siehe [Rezepte](#rezepte)). 
 
 Das **Pferdebuch** ist ein Item, das du craftest (siehe [Rezepte](#rezepte)). Rechtsklick damit öffnet eine Liste aller deiner gezähmten Pferde mit:
 
-- Name und Rasse,
+- Name, Level und Rasse,
 - Tempo, Ausdauer, Stärke und Bindung,
 - Sättigung,
 - letztem bekannten Standort mit Dimension.
@@ -527,6 +613,7 @@ Im Kreativmodus gibt es einen eigenen Tab **„Pferde“** mit allem, was zu Pfe
 - Sattel und alle Pferderüstungen (Leder, Kupfer, Eisen, Gold, Diamant, Netherit)
 - Leine, Namensschild, Pinsel, Truhe für Esel und Maultiere
 - Futter: Heuballen, Weizen, Zucker, Apfel, Karotte, goldene Karotte, goldener Apfel
+- Tränke der Ausdauer (normal und verlängert, jeweils als Trank, Wurftrank und Verweiltrank)
 - Spawn-Eier für Pferd, Esel, Maultier, Skelett- und Zombiepferd
 
 Die Vanilla-Items bleiben zusätzlich in ihren normalen Tabs.
@@ -562,6 +649,12 @@ N   I   N
 ```
 D   .   D    D = Diamant
 D   E   D    E = Eisenhufeisen
+```
+
+**Trank der Ausdauer** (Braustand)
+```
+Seltsamer Trank + Heuballen          → Trank der Ausdauer
+Trank der Ausdauer + Redstone        → verlängert
 ```
 
 ---
@@ -609,14 +702,15 @@ src/main/java/dev/pizzawunsch/advancedhorses/
 ├── block/                           Futtertrog
 ├── book/                            Pferdebuch (Register und Speicherung)
 ├── horse/                           Gangarten, Werte, Rassen, Wesen, Hufeisen, Hunger,
-│                                    Energie, Bindung, Alter, Verletzungen, Stammbaum, Pfeifen
+│                                    Energie, Bindung, Level, Hufeisen-Verzauberungen, Alter,
+│                                    Verletzungen, Stammbaum, Pfeifen
 ├── inventory/                       Satteltaschen-Plätze mit Sperre, Hufeisen-Slot
 ├── item/                            Pferdebuch, Pferdepfeife
 ├── network/                         Pakete (Gangart, Pferdebuch, Benennen)
 ├── race/                            Rennstrecken, Zeitmessung, /horserace
-├── registry/                        Items, Blöcke, Kreativ-Tab, Gamerules
+├── registry/                        Items, Blöcke, Effekte und Tränke, Kreativ-Tab, Gamerules
 ├── taming/                          Bedürfnisse, Zähmung, Interaktionen
-├── mixin/                           Eingriffe in Pferd, Pferdeinventar und Abwurf-Verhalten
+├── mixin/                           Eingriffe in Pferd, Pferdeinventar, Abwurf-Verhalten und Reparatur
 │   └── client/                      Eingriffe in Modell, Renderer und Inventarbildschirm
 └── client/
     ├── AdvancedHorsesClient.java    Client-Einstiegspunkt
@@ -626,8 +720,8 @@ src/main/java/dev/pizzawunsch/advancedhorses/
     └── screen/                      Namensfenster und Pferdebuch
 
 src/main/resources/
-├── assets/advancedhorses/           Sprachen, Modelle, Texturen, Blockstates
-└── data/                            Rezepte, Loot-Table, Werkzeug-Tag
+├── assets/advancedhorses/           Sprachen, Modelle, Texturen, Blockstates, Effekt-Symbol
+└── data/                            Rezepte, Brau-Rezepte, Verzauberungen, Loot-Table, Tags
 ```
 
 ---
@@ -640,7 +734,8 @@ src/main/resources/
 |---|---|
 | `AdvancedHorsesHUNGER`, `…ENERGY`, `…BOND` | Sättigung, Energie, Bindung |
 | `AdvancedHorsesSTAMINA`, `…STRENGTH` | Angeborene Ausdauer und Stärke |
-| `AdvancedHorsesTRAINED_SPEED`, `…_STAMINA`, `…_STRENGTH` | Trainingsfortschritt |
+| `AdvancedHorsesLEVEL`, `…XP` | Level und Erfahrung bis zum nächsten Level |
+| `AdvancedHorsesSHOE_SPEED`, `…SHOE_JUMP`, `…SHOE_STAMINA` | Verzauberungsstufen der eingelegten Hufeisen |
 | `AdvancedHorsesBREED`, `…TRAIT`, `…SHOES`, `…FLAGS`, `…AGE` | Rasse, Wesen, Hufeisen, Zustände, Alter |
 | `AdvancedHorsesShoe` | Die eingelegten Hufeisen (Item inklusive Haltbarkeit) |
 | `AdvancedHorsesBirth`, `…LameTicks`, `…ShoeWear` | Geburtszeit, Heilungsdauer, angefangener Block der Abnutzung |
