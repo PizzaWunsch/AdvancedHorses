@@ -1,0 +1,15 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "key": {
+    "N": "minecraft:iron_nugget",
+    "I": "minecraft:iron_ingot"
+  },
+  "pattern": [
+    "I I",
+    "N N",
+    "NIN"
+  ],
+  "result": {
+    "id": "advancedhorses:iron_horseshoe"
+  }
+}

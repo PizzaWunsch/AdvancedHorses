@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "key": {
+    "D": "minecraft:diamond",
+    "H": "advancedhorses:iron_horseshoe"
+  },
+  "pattern": [
+    "D D",
+    "DHD"
+  ],
+  "result": {
+    "id": "advancedhorses:diamond_horseshoe"
+  }
+}

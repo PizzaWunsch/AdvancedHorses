@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "key": {
+    "S": "#minecraft:wooden_slabs",
+    "H": "minecraft:hay_block"
+  },
+  "pattern": [
+    "S S",
+    "SHS"
+  ],
+  "result": {
+    "id": "advancedhorses:trough"
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "id": "advancedhorses",
+  "version": "${version}",
+  "name": "AdvancedHorses",
+  "description": "",
+  "authors": [],
+  "contact": {},
+  "license": "All-Rights-Reserved",
+  "icon": "assets/advancedhorses/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "fabric-datagen": [
+      "dev.pizzawunsch.advancedhorses.client.AdvancedHorsesDataGenerator"
+    ],
+    "client": [
+      "dev.pizzawunsch.advancedhorses.client.AdvancedHorsesClient"
+    ],
+    "main": [
+      "dev.pizzawunsch.advancedhorses.AdvancedHorses"
+    ]
+  },
+  "mixins": [
+    "advancedhorses.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=${loader_version}",
+    "fabric-api": "*",
+    "minecraft": "${minecraft_version}"
+  }
+}
